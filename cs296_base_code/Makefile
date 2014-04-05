@@ -1,33 +1,25 @@
 .SUFFIXES: .cpp .hpp
 
-# Programs
-SHELL 	= bash
-CC     	= g++
-LD	= ld
-RM 	= rm
-ECHO	= /bin/echo
-CAT	= cat
-PRINTF	= printf
-SED	= sed
-DOXYGEN = doxygen
-######################################
-# Project Name (generate executable with this name)
-TARGET = cs296_base
+SHARED_LIB=TRUE
+FILENAME=mymake
 
-# Project Paths
-PROJECT_ROOT=./
-EXTERNAL_ROOT=$(PROJECT_ROOT)/external
-SRCDIR = $(PROJECT_ROOT)/src
-OBJDIR = $(PROJECT_ROOT)/obj
-BINDIR = $(PROJECT_ROOT)/bin
-DOCDIR = $(PROJECT_ROOT)/doc
+
+#target names
+NOLIBEXE=build_04_exe
+LIBEXE=cs296_04_exelib
+
+#
+SRCFILES=./src/*.cpp
+HEADERFILES=./src/*.hpp
+NOMAINSRCFILES=$(subst ./src/main.cpp,,$(SRCFILES))
 
 # Library Paths
-BOX2D_ROOT=$(EXTERNAL_ROOT)
+BOX2D_ROOT=./external
 GLUI_ROOT=/usr
 GL_ROOT=/usr/include/
 
 #Libraries
+#LIBS = -lBox2D -lglui -framework GLUT -framework OpenGL
 LIBS = -lBox2D -lglui -lglut -lGLU -lGL
 
 # Compiler and Linker flags
@@ -35,71 +27,102 @@ CPPFLAGS =-g -O3 -Wall -fno-strict-aliasing
 CPPFLAGS+=-I $(BOX2D_ROOT)/include -I $(GLUI_ROOT)/include
 LDFLAGS+=-L $(BOX2D_ROOT)/lib -L $(GLUI_ROOT)/lib
 
-######################################
+.PHONY: all setup exe obj report doc
 
-NO_COLOR=\e[0m
-OK_COLOR=\e[1;32m
-ERR_COLOR=\e[1;31m
-WARN_COLOR=\e[1;33m
-MESG_COLOR=\e[1;34m
-FILE_COLOR=\e[1;37m
-
-OK_STRING="[OK]"
-ERR_STRING="[ERRORS]"
-WARN_STRING="[WARNINGS]"
-OK_FMT="${OK_COLOR}%30s\n${NO_COLOR}"
-ERR_FMT="${ERR_COLOR}%30s\n${NO_COLOR}"
-WARN_FMT="${WARN_COLOR}%30s\n${NO_COLOR}"
-######################################
-
-SRCS := $(wildcard $(SRCDIR)/*.cpp)
-INCS := $(wildcard $(SRCDIR)/*.hpp)
-OBJS := $(SRCS:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
-
-
-.PHONY: all setup doc clean distclean
-
-all: setup $(BINDIR)/$(TARGET)
-
-setup:
-	@$(ECHO) "Setting up compilation..."
-	@mkdir -p obj
-	@mkdir -p bin
-
-$(BINDIR)/$(TARGET): $(OBJS)
-	@$(PRINTF) "$(MESG_COLOR)Building executable:$(NO_COLOR) $(FILE_COLOR) %16s$(NO_COLOR)" "$(notdir $@)"
-	@$(CC) -o $@ $(LDFLAGS) $(OBJS) $(LIBS) 2> temp.log || touch temp.err
-	@if test -e temp.err; \
-	then $(PRINTF) $(ERR_FMT) $(ERR_STRING) && $(CAT) temp.log; \
-	elif test -s temp.log; \
-	then $(PRINTF) $(WARN_FMT) $(WARN_STRING) && $(CAT) temp.log; \
-	else $(PRINTF) $(OK_FMT) $(OK_STRING); \
-	fi;
-	@$(RM) -f temp.log temp.err
-
--include -include $(OBJS:.o=.d)
-
-$(OBJS): $(OBJDIR)/%.o : $(SRCDIR)/%.cpp
-	@$(PRINTF) "$(MESG_COLOR)Compiling: $(NO_COLOR) $(FILE_COLOR) %25s$(NO_COLOR)" "$(notdir $<)"
-	@$(CC) $(CPPFLAGS) -c $< -o $@ -MD 2> temp.log || touch temp.err
-	@if test -e temp.err; \
-	then $(PRINTF) $(ERR_FMT) $(ERR_STRING) && $(CAT) temp.log; \
-	elif test -s temp.log; \
-	then $(PRINTF) $(WARN_FMT) $(WARN_STRING) && $(CAT) temp.log; \
-	else printf "${OK_COLOR}%30s\n${NO_COLOR}" "[OK]"; \
-	fi;
-	@$(RM) -f temp.log temp.err
+all: exe
+	
+report:
+	cd ./doc; \
+	latex cs296_report_04; \
+	bibtex cs296_report_04; \
+	latex cs296_report_04; \
+	latex cs296_report_04; \
+	dvipdf cs296_report_04; \
+	cd ..
 
 doc:
-	@$(ECHO) -n "Generating Doxygen Documentation ...  "
-	@$(RM) -rf doc/html
-	@$(DOXYGEN) $(DOCDIR)/Doxyfile 2 > /dev/null
-	@$(ECHO) "Done"
+	@echo Generating Documentation... ; \
+	rm -R -f ./doc/html; \
+	doxygen ./doc/Doxyfile; \
+	echo Done
+
+setup:
+	@mkdir -p ./mybins ./myobjs ./mylibs; \
+	if [ ! -d ./external/include/Box2D ] || [ ! -d ./external/lib/libBox2D.a ]; then \
+	if [ ! -d ./external/src/Box2D ]; then \
+	tar xzf ./external/src/Box2D.tgz; \
+	mv Box2D ./external/src/; \
+	fi; \
+	mkdir -p ./external/src/Box2D/build296; \
+	cd ./external/src/Box2D/build296; \
+	cmake ../; \
+	make; \
+	make install; \
+	fi;
+
+obj: setup $(SRCFILES) $(HEADERFILES)
+	@g++ -fPIC $(CPPFLAGS) -c $(SRCFILES) -MD; \
+	mv *.o *.d ./myobjs;
+
+OBJFILES=./myobjs/*.o
+NOMAINOBJFILES=./myobjs/callbacks.o ./myobjs/cs296_base.o ./myobjs/dominos.o ./myobjs/render.o
+
+-include $(OBJFILES:.o=.d)
+
+exe: setup obj
+	@g++ -o cs296_04_exe $(CPPFLAGS) $(LDFLAGS) $(OBJFILES) $(LIBS); \
+	mv cs296_04_exe ./mybins; \
+
+staticlib: setup obj
+	@ar rvs libCS296test.a $(NOMAINOBJFILES); \
+	mv libCS296test.a ./mylibs/; \
+	cd ..; \
+
+sharedlib: setup obj
+	@g++ -shared -o libCS296test.so $(NOMAINOBJFILES); \
+	mv libCS296test.so ./mylibs/; \
+
+exelib: setup $(SRCFILES) $(HEADERFILES)
+	@if [ $(SHARED_LIB) = FALSE ]; then \
+	make staticlib; \
+	g++ -o ./mybins/cs296_04_exelib $(CPPFLAGS) $(LDFLAGS) -L ./mylibs/ ./myobjs/main.o ./mylibs/libCS296test.a $(LIBS); \
+	else \
+	make sharedlib; \
+	g++ -o ./mybins/cs296_04_exelib $(CPPFLAGS) $(LDFLAGS) -L ./mylibs/ ./myobjs/main.o ./mylibs/libCS296test.so $(LIBS); \
+	fi; \
+
+data: exe
+	@rm -rf ./data; \
+	mkdir -p ./data; \
+	cd ./scripts; \
+	./g04_gen_data.sh; \
+	./g04_gen_csv.sh; \
+	./g04_gen_data_csv.sh; \
+	./g04_gen_data_random.sh; \
+	cd ../; \
+#fit.log			g04_gen_data.sh		g04_gen_data_random.sh	g04_plot02.gpt		g04_plot04.gpt		plot_data_01.sh		plot_data_random.sh
+#g04_gen_csv.sh		g04_gen_data_csv.sh	g04_plot01.gpt		g04_plot03.gpt		g04_plot05.gpt		plot_data_02.sh
+
+plot:
+	rm -rf ./plots; \
+	mkdir  -p ./plots; \
+	cd ./scripts; \
+	./plot_data_01.sh; \
+	./plot_data_02.sh; \
+	./plot_data_random.sh; \
+	gnuplot g04_plot01.gpt; \
+	gnuplot g04_plot02.gpt; \
+	gnuplot g04_plot03.gpt; \
+	gnuplot g04_plot04.gpt; \
+	gnuplot g04_plot05.gpt; \
+	rm -rf ../data/*.dat ./fit.log; \
 
 clean:
-	@$(ECHO) -n "Cleaning up..."
-	@$(RM) -rf $(OBJDIR) *~ $(DEPS) $(SRCDIR)/*~
-	@$(ECHO) "Done"
+	@rm -R -f ./mylibs ./myobjs ./mybins *.o *.d; \
+	rm -rf ./data ./plots; \
+	echo "Cleaning up.. Done" \
 
 distclean: clean
-	@$(RM) -rf $(BINDIR) $(DOCDIR)/html
+	@rm -R -f ./external/src/Box2D ./external/lib/* ./external/include/*; \
+	rm -R -f ./doc/*.aux ./doc/*.bbl ./doc/*.blg ./doc/*.dvi ./doc/*.pdf ./doc/*.log; \
+	echo "Cleaning up Box2D stuff... Done" \

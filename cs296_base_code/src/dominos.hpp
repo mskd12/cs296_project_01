@@ -39,6 +39,7 @@ namespace cs296
     {
       return new dominos_t;
     }
+    void step(settings_t* settings1);
   };
 }
   
