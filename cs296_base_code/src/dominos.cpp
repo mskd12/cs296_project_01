@@ -481,7 +481,91 @@ namespace cs296
 		revolutejd->localAnchorB.Set(0,29);
 		m_world->CreateJoint(revolutejd);
 	}
+	
+	{//testing with small balls
+		b2PolygonShape polygonShape;
+		polygonShape.SetAsBox(5, 0.1);
+        //polygonShape.Set(vertices, 5); //pass array to the shape
+		
+		b2FixtureDef myFixtureDef;
+	    	b2BodyDef myBodyDef;
+		//myBodyDef.type=b2_dynamicBody;
+		myBodyDef.angle = 45*degtorad;
+		//myBodyDef.linearVelocity.Set(0,5);
+		myFixtureDef.shape = &polygonShape; //change the shape of the fixture
+		myFixtureDef.density = 100;
+		myFixtureDef.restitution = 0.1;
+		myFixtureDef.filter.categoryBits = 0x0004;
+		myFixtureDef.filter.maskBits = 0x0005;
+		//myFixtureDef.filter.groupIndex = -1;
+		myBodyDef.position.Set(10,29); 
+		b2Body* Body = m_world->CreateBody(&myBodyDef);
+		Body->CreateFixture(&myFixtureDef); //add a fixture to the body
+		
+		
+		
+		
+		b2PolygonShape polygonShape1;
+		polygonShape1.SetAsBox(5, 0.1);
+        //polygonShape.Set(vertices, 5); //pass array to the shape
+		
+		b2FixtureDef myFixtureDef1;
+	    	b2BodyDef myBodyDef1;
+		//myBodyDef1.type=b2_dynamicBody;
+		myBodyDef1.angle = 45*degtorad;
+		//myBodyDef.linearVelocity.Set(0,5);
+		myFixtureDef1.shape = &polygonShape1; //change the shape of the fixture
+		myFixtureDef1.density = 100;
+		myFixtureDef1.restitution = 0.1;
+		myFixtureDef1.filter.categoryBits = 0x0004;
+		myFixtureDef1.filter.maskBits = 0x0005;
+		//myFixtureDef.filter.groupIndex = -1;
+		myBodyDef1.position.Set(14,25); 
+		b2Body* Body1 = m_world->CreateBody(&myBodyDef1);
+		Body1->CreateFixture(&myFixtureDef1); //add a fixture to the body
+		{
+		b2PolygonShape polygonShape1;
+		polygonShape1.SetAsBox(5, 0.1);
+        //polygonShape.Set(vertices, 5); //pass array to the shape
+		
+		b2FixtureDef myFixtureDef1;
+	    	b2BodyDef myBodyDef1;
+		//myBodyDef1.type=b2_dynamicBody;
+		myBodyDef1.angle = 135*degtorad;
+		//myBodyDef.linearVelocity.Set(0,5);
+		myFixtureDef1.shape = &polygonShape1; //change the shape of the fixture
+		myFixtureDef1.density = 100;
+		myFixtureDef1.restitution = 0.1;
+		myFixtureDef1.filter.categoryBits = 0x0004;
+		myFixtureDef1.filter.maskBits = 0x0005;
+		//myFixtureDef.filter.groupIndex = -1;
+		myBodyDef1.position.Set(14,32); 
+		b2Body* Body1 = m_world->CreateBody(&myBodyDef1);
+		Body1->CreateFixture(&myFixtureDef1); //add a fixture to the body
+		}
 
+		
+		b2Body* spherebody;
+		{		
+			b2CircleShape circle;
+			circle.m_radius = 0.1;
+			
+			b2FixtureDef ballfd;
+			ballfd.shape = &circle;
+			ballfd.density = 0.000000000000000000000000001f;
+			ballfd.friction = 0.0f;
+			ballfd.restitution = 1.0f;
+			
+			for (int i = 0; i < 200; ++i)
+			{
+			  b2BodyDef ballbd;
+			  ballbd.type = b2_dynamicBody;
+			  ballbd.position.Set((rand() % 2) + 12.0f , (rand() % 2) + 27.0f);
+			  ballbd.linearVelocity.Set((rand() % 10) - 5.0f , (rand() % 10) - 5.0f);
+			  spherebody = m_world->CreateBody(&ballbd);
+			  spherebody->CreateFixture(&ballfd);
+			}
+	}
  
 }
   sim_t *sim = new sim_t("Dominos", dominos_t::create);
