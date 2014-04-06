@@ -564,24 +564,38 @@ void dominos_t::step(settings_t* settings1) {
 		b2Shape::Type shapeTypeA = currContact->GetFixtureA()->GetShape()->GetType();
 		b2Shape::Type shapeTypeB = currContact->GetFixtureB()->GetShape()->GetType();
 		if (shapeTypeA == 0 && shapeTypeB == 0 && (shapeA->m_radius == 0.4f && shapeB->m_radius == 0.4f)) {
-			if(true){
+			if(fixA->GetFriction() == 0.00001f){
 				//varB = 0;
-				//fixB->SetDensity(0.0001);
+				fixB->SetFriction(0.00001f);
+				fixB->SetDensity(0.00007f);	
 				//shapeB->m_radius = 0.4f;
 			}
-			if(true){
-				//varA = 0;
-				//fixA->SetDensity(0.0001);
-				//shapeA->m_radius = 0.4f;
-			}
-			//shapeA->m_radius = 1.0f;
-		}	
-	
-		
-		//b2Fixture fixB = currContact->GetFixtureB();
+			if(fixB->GetFriction() == 0.00001f){
+				//varB = 0;
+				fixA->SetFriction(0.00001f);
+				fixA->SetDensity(0.00007f);	
+				//shapeB->m_radius = 0.4f;
+			}			//shapeA->m_radius = 1.0f;
+		}
 		currContact = currContact->GetNext();
 		
 	}	
+	b2Body* currBody = m_world->GetBodyList();
+	while(currBody != NULL) {
+		//b2Fixture* fixA = currBody->GetFixtureList();
+		b2Body* bodyA = currBody->GetFixtureList()->GetBody();
+		b2Shape* shapeA = currBody->GetFixtureList()->GetShape();
+		b2Shape::Type shapeTypeA = currBody->GetFixtureList()->GetShape()->GetType();
+		if (shapeTypeA == 0 && shapeA->m_radius == 0.4f ) {
+			if(bodyA->GetWorldCenter().x < -20){
+				//bodyA->SetTransform(b2Vec2((rand() % 2) + 12.0f, (rand() % 2) + 27.0f), bodyA->GetAngle());
+				//bodyA->GetAngle();
+				//bodyA->GetWorldCenter().x = ;
+				//bodyA->GetWorldCenter().y = 
+			}
+		}
+		currBody = currBody->GetNext();
+	}
 }
 sim_t *sim = new sim_t("Dominos", dominos_t::create);
 }
