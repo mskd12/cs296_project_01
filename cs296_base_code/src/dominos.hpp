@@ -40,6 +40,7 @@ namespace cs296
       return new dominos_t;
     }
     void step(settings_t* settings1);
+    b2Body* ball_array[200];
   };
 }
   

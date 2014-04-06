@@ -64,7 +64,6 @@ namespace cs296
 
      //groundBody
      const float degtorad = 0.01745329251994f;
-
     b2Body* groundBody;
     {
 	    b2EdgeShape groundBodyShape; 
@@ -433,17 +432,18 @@ b2Joint* exhaustCtrlJoint;
 		ballfd.friction = 0.0f;
 		
 		ballfd.restitution = 1.0f;
-
+		
 		for (int i = 0; i < 200; ++i)
 		{
 			b2BodyDef ballbd;
 			ballbd.type = b2_dynamicBody;
 			ballbd.position.Set((rand() % 2) + 12.0f , (rand() % 2) + 27.0f);
 			ballbd.linearVelocity.Set((rand() % 10) - 5.0f , (rand() % 10) - 5.0f);
-			spherebody = m_world->CreateBody(&ballbd);
+			ball_array[i] = m_world->CreateBody(&ballbd);
 			//spherebody->userData = 1;
-			spherebody->CreateFixture(&ballfd);
+			ball_array[i]->CreateFixture(&ballfd);
 		}
+			ballfd.density = 0.00007f;
 			b2BodyDef ballbd;
 			ballbd.type = b2_dynamicBody;
 			ballbd.position.Set(0,20);
@@ -551,7 +551,8 @@ b2Joint* sphereGndJoint;
 	}
 	
 }
-settings_t* settings1 = new settings_t();
+sim_t *sim = new sim_t("Dominos", dominos_t::create);
+
 void dominos_t::step(settings_t* settings1) {
 	base_sim_t::step(settings1);
 	//b2Contact* contactList = m_world->GetContactList();
@@ -564,25 +565,30 @@ void dominos_t::step(settings_t* settings1) {
 		b2Shape::Type shapeTypeA = currContact->GetFixtureA()->GetShape()->GetType();
 		b2Shape::Type shapeTypeB = currContact->GetFixtureB()->GetShape()->GetType();
 		if (shapeTypeA == 0 && shapeTypeB == 0 && (shapeA->m_radius == 0.4f && shapeB->m_radius == 0.4f)) {
-			if(fixA->GetFriction() == 0.00001f){
-				//varB = 0;
-				fixB->SetFriction(0.00001f);
+			if(fixA->GetDensity() == 0.00007f){
 				fixB->SetDensity(0.00007f);	
-				//shapeB->m_radius = 0.4f;
 			}
-			if(fixB->GetFriction() == 0.00001f){
-				//varB = 0;
-				fixA->SetFriction(0.00001f);
+			if(fixB->GetDensity() == 0.00007f){
 				fixA->SetDensity(0.00007f);	
-				//shapeB->m_radius = 0.4f;
-			}			//shapeA->m_radius = 1.0f;
-		}
+			}		
 		currContact = currContact->GetNext();
+	}
+}
+	for(int i = 0; i < 200; i++){
+	b2Vec2 pos = ball_array[i]->GetPosition();
+	b2Vec2 vel = ball_array[i]->GetLinearVelocity();
+	if(pos.y >40 || pos.x < -30 || pos.y<0){
+		ball_array[i]->SetTransform(b2Vec2((rand() % 2) + 12.0f, (rand() % 2) + 27.0f), 0);
+		ball_array[i]->SetLinearVelocity(b2Vec2((rand() % 10) - 5.0f , (rand() % 10) - 5.0f));
+		//ball_array[i]->GetFixtureList()->SetFriction = 0;
+		ball_array[i]->GetFixtureList()->SetDensity( 0.0000007f);
 		
-	}	
-	b2Body* currBody = m_world->GetBodyList();
+	}
+	}
+		
+	/*b2Body* currBody = m_world->GetBodyList();
 	while(currBody != NULL) {
-		//b2Fixture* fixA = currBody->GetFixtureList();
+		b2Fixture* fixA = currBody->GetFixtureList();
 		b2Body* bodyA = currBody->GetFixtureList()->GetBody();
 		b2Shape* shapeA = currBody->GetFixtureList()->GetShape();
 		b2Shape::Type shapeTypeA = currBody->GetFixtureList()->GetShape()->GetType();
@@ -592,10 +598,26 @@ void dominos_t::step(settings_t* settings1) {
 				//bodyA->GetAngle();
 				//bodyA->GetWorldCenter().x = ;
 				//bodyA->GetWorldCenter().y = 
+				bodyA->DestroyFixture(fixA);
+				
+				b2Body* pistonSphere;
+				b2CircleShape circle;
+				circle.m_radius = 0.5;
+
+				b2FixtureDef ballfd;
+				ballfd.shape = &circle;
+				ballfd.density = 0.0001f;
+				ballfd.friction = 0.0f;
+				ballfd.restitution = 1.0f;
+				ballfd.filter.groupIndex = -5;
+				b2BodyDef ballbd;
+				ballbd.type = b2_dynamicBody;
+				ballbd.position.Set(20, 20);
+				pistonSphere = m_world->CreateBody(&ballbd);
+				pistonSphere->CreateFixture(&ballfd);
 			}
 		}
 		currBody = currBody->GetNext();
-	}
+	}*/
 }
-sim_t *sim = new sim_t("Dominos", dominos_t::create);
 }

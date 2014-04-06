@@ -87,6 +87,69 @@ void base_sim_t::draw_title(int x, int y, const char *string)
 
 void base_sim_t::step(settings_t* settings)
 {
+/*/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	b2Contact* currContact = m_world->GetContactList();
+	while(currContact != NULL) {
+		b2Fixture* fixA = currContact->GetFixtureA();
+		b2Fixture* fixB = currContact->GetFixtureB();
+		b2Shape* shapeA = currContact->GetFixtureA()->GetShape();
+		b2Shape* shapeB = currContact->GetFixtureB()->GetShape();
+		b2Shape::Type shapeTypeA = currContact->GetFixtureA()->GetShape()->GetType();
+		b2Shape::Type shapeTypeB = currContact->GetFixtureB()->GetShape()->GetType();
+		if (shapeTypeA == 0 && shapeTypeB == 0 && (shapeA->m_radius == 0.4f && shapeB->m_radius == 0.4f)) {
+			if(fixA->GetFriction() == 0.00001f){
+				//varB = 0;
+				fixB->SetFriction(0.00001f);
+				fixB->SetDensity(0.00007f);	
+				//shapeB->m_radius = 0.4f;
+			}
+			if(fixB->GetFriction() == 0.00001f){
+				//varB = 0;
+				fixA->SetFriction(0.00001f);
+				fixA->SetDensity(0.00007f);	
+				//shapeB->m_radius = 0.4f;
+			}			//shapeA->m_radius = 1.0f;
+		}
+		currContact = currContact->GetNext();
+		
+	}	
+	
+	b2Body* currBody = m_world->GetBodyList();
+	while(currBody != NULL) {
+		b2Fixture* fixA = currBody->GetFixtureList();
+		b2Body* bodyA = currBody->GetFixtureList()->GetBody();
+		b2Shape* shapeA = currBody->GetFixtureList()->GetShape();
+		b2Shape::Type shapeTypeA = currBody->GetFixtureList()->GetShape()->GetType();
+		if (shapeTypeA == 0 && shapeA->m_radius == 0.4f ) {
+			if(bodyA->GetWorldCenter().x < -20){
+				//bodyA->SetTransform(b2Vec2((rand() % 2) + 12.0f, (rand() % 2) + 27.0f), bodyA->GetAngle());
+				//bodyA->GetAngle();
+				//bodyA->GetWorldCenter().x = ;
+				//bodyA->GetWorldCenter().y = 
+				bodyA->DestroyFixture(fixA);
+				
+				b2Body* pistonSphere;
+				b2CircleShape circle;
+				circle.m_radius = 0.5;
+
+				b2FixtureDef ballfd;
+				ballfd.shape = &circle;
+				ballfd.density = 0.0001f;
+				ballfd.friction = 0.0f;
+				ballfd.restitution = 1.0f;
+				ballfd.filter.groupIndex = -5;
+				b2BodyDef ballbd;
+				ballbd.type = b2_dynamicBody;
+				ballbd.position.Set(20, 20);
+				pistonSphere = m_world->CreateBody(&ballbd);
+				pistonSphere->CreateFixture(&ballfd);
+			}
+		}
+		currBody = currBody->GetNext();
+	}
+///////////////////////////////////////////////////////////////////////////////////////////////////////////*/
+	
   float32 time_step = settings->hz > 0.0f ? 1.0f / settings->hz : float32(0.0f);
 
   if (settings->pause)
