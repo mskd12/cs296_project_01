@@ -60,7 +60,7 @@ namespace cs296
      short mask2 = category1 ;
      short mask3 = category1 ;
 
-
+	 float x,y,angle;
 
      //groundBody
      const float degtorad = 0.01745329251994f;
@@ -433,7 +433,7 @@ b2Joint* exhaustCtrlJoint;
 		
 		ballfd.restitution = 1.0f;
 		
-		for (int i = 0; i < 200; ++i)
+		for (int i = 0; i < 50; ++i)
 		{
 			b2BodyDef ballbd;
 			ballbd.type = b2_dynamicBody;
@@ -445,9 +445,9 @@ b2Joint* exhaustCtrlJoint;
 		}
 			ballfd.density = 0.00007f;
 			b2BodyDef ballbd;
-			ballbd.type = b2_dynamicBody;
+			//ballbd.type = b2_dynamicBody;
 			ballbd.position.Set(0,20);
-			ballbd.linearVelocity.Set((rand() % 10) - 5.0f , (rand() % 10) - 5.0f);
+			//ballbd.linearVelocity.Set((rand() % 10) - 5.0f , (rand() % 10) - 5.0f);
 			spherebody = m_world->CreateBody(&ballbd);
 			spherebody->CreateFixture(&ballfd);
 		
@@ -466,7 +466,7 @@ b2Joint* sphereGndJoint;
 			b2BodyDef myBodyDef1;
 			myBodyDef1.type=b2_dynamicBody;
 			//myBodyDef1.angle = 135*degtorad;
-			//myBodyDef1.linearVelocity.Set(0,-1000);
+			myBodyDef1.linearVelocity.Set(0,-4);
 			myFixtureDef1.shape = &polygonShape1; //change the shape of the fixture
 			myFixtureDef1.density = 0.0001;
 			myFixtureDef1.restitution = 1;
@@ -553,71 +553,21 @@ b2Joint* sphereGndJoint;
 }
 sim_t *sim = new sim_t("Dominos", dominos_t::create);
 
-void dominos_t::step(settings_t* settings1) {
-	base_sim_t::step(settings1);
-	//b2Contact* contactList = m_world->GetContactList();
-	b2Contact* currContact = m_world->GetContactList();
-	while(currContact != NULL) {
-		b2Fixture* fixA = currContact->GetFixtureA();
-		b2Fixture* fixB = currContact->GetFixtureB();
-		b2Shape* shapeA = currContact->GetFixtureA()->GetShape();
-		b2Shape* shapeB = currContact->GetFixtureB()->GetShape();
-		b2Shape::Type shapeTypeA = currContact->GetFixtureA()->GetShape()->GetType();
-		b2Shape::Type shapeTypeB = currContact->GetFixtureB()->GetShape()->GetType();
-		if (shapeTypeA == 0 && shapeTypeB == 0 && (shapeA->m_radius == 0.4f && shapeB->m_radius == 0.4f)) {
-			if(fixA->GetDensity() == 0.00007f){
-				fixB->SetDensity(0.00007f);	
-			}
-			if(fixB->GetDensity() == 0.00007f){
-				fixA->SetDensity(0.00007f);	
-			}		
-		currContact = currContact->GetNext();
-	}
-}
-	for(int i = 0; i < 200; i++){
-	b2Vec2 pos = ball_array[i]->GetPosition();
-	b2Vec2 vel = ball_array[i]->GetLinearVelocity();
-	if(pos.y >40 || pos.x < -30 || pos.y<0){
+
+
+void dominos_t::step(settings_t* settings){
+		base_sim_t::step(settings);
+		
+		for(int i = 0; i < 50; i++){
+			b2Vec2 pos = ball_array[i]->GetPosition();
+			b2Vec2 vel = ball_array[i]->GetLinearVelocity();
+			if(pos.y >40 || pos.x < -30 || pos.y<0){
 		ball_array[i]->SetTransform(b2Vec2((rand() % 2) + 12.0f, (rand() % 2) + 27.0f), 0);
 		ball_array[i]->SetLinearVelocity(b2Vec2((rand() % 10) - 5.0f , (rand() % 10) - 5.0f));
-		//ball_array[i]->GetFixtureList()->SetFriction = 0;
 		ball_array[i]->GetFixtureList()->SetDensity( 0.0000007f);
-		
-	}
-	}
-		
-	/*b2Body* currBody = m_world->GetBodyList();
-	while(currBody != NULL) {
-		b2Fixture* fixA = currBody->GetFixtureList();
-		b2Body* bodyA = currBody->GetFixtureList()->GetBody();
-		b2Shape* shapeA = currBody->GetFixtureList()->GetShape();
-		b2Shape::Type shapeTypeA = currBody->GetFixtureList()->GetShape()->GetType();
-		if (shapeTypeA == 0 && shapeA->m_radius == 0.4f ) {
-			if(bodyA->GetWorldCenter().x < -20){
-				//bodyA->SetTransform(b2Vec2((rand() % 2) + 12.0f, (rand() % 2) + 27.0f), bodyA->GetAngle());
-				//bodyA->GetAngle();
-				//bodyA->GetWorldCenter().x = ;
-				//bodyA->GetWorldCenter().y = 
-				bodyA->DestroyFixture(fixA);
-				
-				b2Body* pistonSphere;
-				b2CircleShape circle;
-				circle.m_radius = 0.5;
-
-				b2FixtureDef ballfd;
-				ballfd.shape = &circle;
-				ballfd.density = 0.0001f;
-				ballfd.friction = 0.0f;
-				ballfd.restitution = 1.0f;
-				ballfd.filter.groupIndex = -5;
-				b2BodyDef ballbd;
-				ballbd.type = b2_dynamicBody;
-				ballbd.position.Set(20, 20);
-				pistonSphere = m_world->CreateBody(&ballbd);
-				pistonSphere->CreateFixture(&ballfd);
-			}
 		}
-		currBody = currBody->GetNext();
-	}*/
+		
+		
+	}
 }
 }
