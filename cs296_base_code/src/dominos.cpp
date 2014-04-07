@@ -43,7 +43,7 @@ namespace cs296
    * This is the documentation block for the constructor.
    */ 
    const float x=0,y=0,degtorad = 0.01745329251994f;
-   float angle=30*degtorad;
+   float angle=0*degtorad;
   b2Vec2 transform(b2Vec2 abc)//////////////////  translation is not taken care of
   {
 	  b2Vec2 now;
@@ -53,6 +53,7 @@ namespace cs296
   }
   dominos_t::dominos_t()
   {
+	  m_world->SetContactListener(&myListener);
     //Ground
     /*! \var b1 
      * \brief pointer to the body ground 
@@ -143,10 +144,11 @@ namespace cs296
 		  myBodyDef.position=(transform(b2Vec2(0,25))); //in the middle
 		  //myBodyDef.type=b2_dynamicBody;
 		  b2Body* dynamicBody1 = m_world->CreateBody(&myBodyDef);
+		  dynamicBody1->SetUserData(new int(2));
 		  dynamicBody1->CreateFixture(&myFixtureDef); //add a fixture to the body
 
     }
-    ///////////////ayipoyo
+    ///////////////
     {//Fuel control(have added the control rod )
 		   b2Vec2 vertices[3];
 		  vertices[0].Set(0.0f, -2.0f);
@@ -161,6 +163,7 @@ namespace cs296
 		  fd->shape = new b2PolygonShape;
 		  fd->shape = &shape;
 		  fd->density = 0.1f;
+		 //fd->restitution = 0.0f;
 		  fd->friction = 1.0f;
 		  fd->filter.categoryBits = category1;
 		  fd->filter.maskBits = mask1;
@@ -170,33 +173,34 @@ namespace cs296
 		  bd2.position=transform(b2Vec2(8.0f, 23.0f));
 		  bd2.angle = -45 * degtorad+angle;
 		  bd2.type = b2_dynamicBody;
-		  b2Body* body2 = m_world->CreateBody(&bd2);
+		  fuelControl = m_world->CreateBody(&bd2);
 		  b2FixtureDef *fd2 = new b2FixtureDef;
 		  fd2->density = 0.1f;
 		  fd2->shape = new b2PolygonShape;
 		  fd2->shape = &shape2;
 		  fd2->filter.categoryBits = category1;
 		  fd2->filter.maskBits = mask1;
-		  body2->CreateFixture(fd2);
-		  body2->CreateFixture(fd);
+		  fuelControl->CreateFixture(fd2);
+		  fuelControl->CreateFixture(fd);
+		  fuelControl->SetUserData(new int(1));
 
 		  b2PrismaticJointDef prismaticJointDef;
 		  b2Vec2 v;
 		  v.Set(cos(45*degtorad+angle),sin(45*degtorad+angle));
-		  prismaticJointDef.Initialize(body2, groundBody, body2->GetWorldCenter(), v);
+		  prismaticJointDef.Initialize(fuelControl, groundBody, fuelControl->GetWorldCenter(), v);
 		  m_world->CreateJoint(&prismaticJointDef);
 		  
 	////////////////////////
 	    //Fuel Control Rod right
-	b2Body* fuelRod1;
     {
 		b2PolygonShape fuelRod1Poly;
 		b2BodyDef fuelRod1Def;
 		fuelRod1Poly.SetAsBox(4, 0.6f);
 		b2FixtureDef fuelRod1FixDef;
 
-		fuelRod1FixDef.filter.categoryBits = category3;
-		fuelRod1FixDef.filter.maskBits = mask3;
+		fuelRod1FixDef.filter.categoryBits = 0x0003;
+		fuelRod1FixDef.filter.maskBits = 0x0001;
+		fuelRod1FixDef.filter.groupIndex = -11;
 		fuelRod1FixDef.shape = & fuelRod1Poly;
 		fuelRod1FixDef.density = 10.0f;
 		fuelRod1FixDef.restitution = 1.0f;
@@ -205,7 +209,6 @@ namespace cs296
 		fuelRod1Def.angle = -35 * degtorad+angle;
 		fuelRod1 = m_world->CreateBody(&fuelRod1Def);
 		fuelRod1->CreateFixture(&fuelRod1FixDef);
-		
 		b2RevoluteJointDef* revolutejd = new b2RevoluteJointDef();
 		revolutejd->bodyA = fuelRod1;
 		revolutejd->bodyB = groundBody;
@@ -224,11 +227,12 @@ namespace cs296
 	b2Vec2 anchor1, anchor2;
 	anchor1.Set(var1.x-2.1 *sin(-45* degtorad+angle),var1.y+2.1*cos(-45* degtorad+angle));
 	anchor2.Set(var2.x+4*cos(-35* degtorad+angle), var2.y+4*sin(-35 * degtorad+angle) );
-	distancejoint.Initialize(body2, fuelRod1, anchor1, anchor2);
+	distancejoint.Initialize(fuelControl, fuelRod1, anchor1, anchor2);
+	distancejoint.collideConnected = false;;
 	m_world->CreateJoint(&distancejoint);	  
 	}
 	
-	
+
 	{//Exhaust control(have added the control rod )
 		   b2Vec2 vertices[3];
 		  vertices[0].Set(0.0f, -2.0f);
@@ -247,53 +251,53 @@ namespace cs296
 		  fd->filter.categoryBits = category1;
 		  fd->filter.maskBits = mask1;
 
-
 		  b2BodyDef bd2;
 		  bd2.position=transform(b2Vec2(-8.0f, 23.0f));
 		  bd2.angle = 45 * degtorad+angle;
 		  bd2.type = b2_dynamicBody;
-		  b2Body* body2 = m_world->CreateBody(&bd2);
+		  exhaustControl = m_world->CreateBody(&bd2);
 		  b2FixtureDef *fd2 = new b2FixtureDef;
 		  fd2->density = 0.1f;
 		  fd2->shape = new b2PolygonShape;
 		  fd2->shape = &shape2;
 		  fd2->filter.categoryBits = category1;
 		  fd2->filter.maskBits = mask1;
-		  body2->CreateFixture(fd2);
-		  body2->CreateFixture(fd);
+		  exhaustControl->CreateFixture(fd2);
+		  exhaustControl->CreateFixture(fd);
+		  exhaustControl->SetUserData(new int(3));
 
 		  b2PrismaticJointDef prismaticJointDef;
 		  b2Vec2 v;
 		  v.Set(cos(135*degtorad+angle),sin(135*degtorad+angle));
-		  prismaticJointDef.Initialize(body2, groundBody, body2->GetWorldCenter(), v);
+		  prismaticJointDef.Initialize(exhaustControl, groundBody, exhaustControl->GetWorldCenter(), v);
 		  m_world->CreateJoint(&prismaticJointDef);
 		  
 	////////////////////////
 	    //Exhaust Control Rod left
-	b2Body* fuelRod1;
     {
-		b2PolygonShape fuelRod1Poly;
-		b2BodyDef fuelRod1Def;
-		fuelRod1Poly.SetAsBox(4, 0.6f);
-		b2FixtureDef fuelRod1FixDef;
+		b2PolygonShape exhaustRod1Poly;
+		b2BodyDef exhaustRod1Def;
+		exhaustRod1Poly.SetAsBox(4, 0.6f);
+		b2FixtureDef exhaustRod1FixDef;
 
-		fuelRod1FixDef.filter.categoryBits = category2;
-		fuelRod1FixDef.filter.maskBits = mask2 | category2;
-		fuelRod1FixDef.shape = & fuelRod1Poly;
-		fuelRod1FixDef.density = 10.0f;
-		fuelRod1FixDef.restitution = 1.0f;
-		fuelRod1Def.position=transform(b2Vec2(-7, 27));
-		fuelRod1Def.type = b2_dynamicBody;
-		fuelRod1Def.angle = 35 * degtorad+angle;
-		fuelRod1 = m_world->CreateBody(&fuelRod1Def);
-		fuelRod1->CreateFixture(&fuelRod1FixDef);
+		exhaustRod1FixDef.filter.categoryBits = category2;
+		exhaustRod1FixDef.filter.maskBits = mask2 | category2;
+		exhaustRod1FixDef.filter.groupIndex = -11;
+		exhaustRod1FixDef.shape = & exhaustRod1Poly;
+		exhaustRod1FixDef.density = 10.0f;
+		exhaustRod1FixDef.restitution = 1.0f;
+		exhaustRod1Def.position=transform(b2Vec2(-7, 27));
+		exhaustRod1Def.type = b2_dynamicBody;
+		exhaustRod1Def.angle = 35 * degtorad+angle;
+		exhaustRod1 = m_world->CreateBody(&exhaustRod1Def);
+		exhaustRod1->CreateFixture(&exhaustRod1FixDef);
 		
 		b2RevoluteJointDef* revolutejd = new b2RevoluteJointDef();
-		revolutejd->bodyA = fuelRod1;
+		revolutejd->bodyA = exhaustRod1;
 		revolutejd->bodyB = groundBody;
 		revolutejd->collideConnected = false;
 		revolutejd->localAnchorA.Set(0,0); 
-		revolutejd->localAnchorB = fuelRod1->GetWorldCenter();
+		revolutejd->localAnchorB = exhaustRod1->GetWorldCenter();
 		
 		
 		m_world->CreateJoint(revolutejd);
@@ -306,16 +310,17 @@ namespace cs296
 	b2Vec2 anchor1, anchor2;
 	anchor1.Set(var1.x-2.1*sin(45* degtorad+angle),var1.y+2.1*cos(45* degtorad+angle));
 	anchor2.Set(var2.x-4*cos(35* degtorad+angle), var2.y-4*sin(35 * degtorad+angle) );
-	distancejoint.Initialize(body2, fuelRod1, anchor1, anchor2);
+	distancejoint.Initialize(exhaustControl, exhaustRod1, anchor1, anchor2);
 	m_world->CreateJoint(&distancejoint);
 	}
 		//planks in middle
-b2Body* fuelPlank;
+
+
 	{//fuel part
 		b2PolygonShape polygonShape;
 		polygonShape.SetAsBox(2.5, 0.1);
-        	b2FixtureDef myFixtureDef;
-	        b2BodyDef myBodyDef;		
+        b2FixtureDef myFixtureDef;
+	    b2BodyDef myBodyDef;		
 
 		myBodyDef.type=b2_dynamicBody;
 		myBodyDef.angle = -15*degtorad+angle;
@@ -326,22 +331,21 @@ b2Body* fuelPlank;
 		myFixtureDef.filter.maskBits = mask3;
 		myFixtureDef.filter.groupIndex = -1;
 		myBodyDef.position=transform(b2Vec2(2.5,29));
-		b2Body* fuelPlank = m_world->CreateBody(&myBodyDef);
+		//myBodyDef.angularVelocity  = -1000000.0f;
+		fuelPlank = m_world->CreateBody(&myBodyDef);
 		fuelPlank->CreateFixture(&myFixtureDef); 
 		
 		b2RevoluteJointDef* revolutejd = new b2RevoluteJointDef();
-		revolutejd->bodyA = fuelPlank;
-		revolutejd->bodyB = groundBody;
+		revolutejd->bodyB = fuelPlank;
+		revolutejd->bodyA = groundBody;
 		revolutejd->collideConnected = false;
-		revolutejd->localAnchorA.Set(-2.5,0); 
-		revolutejd->localAnchorB=(transform(b2Vec2(0,29)));
+		revolutejd->localAnchorB.Set(-2.5,0); 
+		revolutejd->localAnchorA=(transform(b2Vec2(0,29)));
 		revolutejd->enableMotor = true;
-		revolutejd->motorSpeed = -2;
+		revolutejd->motorSpeed = 2;
 		revolutejd->maxMotorTorque = 1000;
-		m_world->CreateJoint(revolutejd);
+		fuelPlankJoint = (b2RevoluteJoint*)m_world->CreateJoint(revolutejd);
 	}
-b2Body* exhaustPlank;	
-b2Joint* exhaustCtrlJoint;
 	{//exhaust part
 		b2PolygonShape polygonShape;
 		polygonShape.SetAsBox(2.5, 0.1);
@@ -357,7 +361,7 @@ b2Joint* exhaustCtrlJoint;
 		myFixtureDef.filter.categoryBits = category2;
 		myFixtureDef.filter.maskBits = mask2 | category2;
 		myFixtureDef.filter.groupIndex = -1;
-		myBodyDef.position=transform(b2Vec2(-2.5,29)); 
+		myBodyDef.position=transform(b2Vec2(2.5,29)); 
 		exhaustPlank = m_world->CreateBody(&myBodyDef);
 		exhaustPlank->CreateFixture(&myFixtureDef);
 
@@ -366,12 +370,12 @@ b2Joint* exhaustCtrlJoint;
 		revolutejd->bodyA = exhaustPlank;
 		revolutejd->bodyB = groundBody;
 		revolutejd->collideConnected = false;
-		revolutejd->localAnchorA.Set(2.5,0); 
+		revolutejd->localAnchorA.Set(-2.5,0); 
 		revolutejd->localAnchorB=transform(b2Vec2(0,29));
 		revolutejd->enableMotor = true;
 		revolutejd->motorSpeed = 2;
 		revolutejd->maxMotorTorque = 1000;
-		exhaustCtrlJoint = m_world->CreateJoint(revolutejd);
+		exhaustPlankJoint = (b2RevoluteJoint*)m_world->CreateJoint(revolutejd);
 	}
 	
 		{//testing with small balls
@@ -437,10 +441,11 @@ b2Joint* exhaustCtrlJoint;
 		ballfd.shape = &circle;
 		ballfd.density = 0.0000007f;
 		ballfd.friction = 0.0f;
-		
+		ballfd.filter.categoryBits = 0x0004;
+		ballfd.filter.maskBits = 0x0001 | 0x0002 | 0x0004 | 0x0005;
 		ballfd.restitution = 1.0f;
 		
-		for (int i = 0; i < 50; ++i)
+		for (int i = 0; i < nBalls; ++i)
 		{
 			b2BodyDef ballbd;
 			ballbd.type = b2_dynamicBody;
@@ -460,7 +465,7 @@ b2Joint* exhaustCtrlJoint;
 		
 	}
 }
-b2Body* pistonSphere;
+
 b2Joint* sphereGndJoint;
 	
 	{
@@ -473,7 +478,7 @@ b2Joint* sphereGndJoint;
 			b2BodyDef myBodyDef1;
 			myBodyDef1.type=b2_dynamicBody;
 			//myBodyDef1.angle = 135*degtorad;
-			myBodyDef1.linearVelocity.Set(0,-4);
+			myBodyDef1.linearVelocity.Set(0,-50);
 			myFixtureDef1.shape = &polygonShape1; //change the shape of the fixture
 			myFixtureDef1.density = 0.0001;
 			myFixtureDef1.restitution = 1;
@@ -526,6 +531,7 @@ b2Joint* sphereGndJoint;
 			ballfd.filter.groupIndex = -5;
 			b2BodyDef ballbd;
 			ballbd.type = b2_dynamicBody;
+			//ballbd.angularVelocity = -12000.0f;
 			ballbd.position=transform(b2Vec2(0, -7));
 			pistonSphere = m_world->CreateBody(&ballbd);
 			pistonSphere->CreateFixture(&ballfd);
@@ -542,11 +548,11 @@ b2Joint* sphereGndJoint;
 		m_world->CreateJoint(jointRodSphereDef);
 
 		b2RevoluteJointDef* jointGndSphereDef = new b2RevoluteJointDef();
-		jointGndSphereDef->bodyA = pistonSphere;
-		jointGndSphereDef->bodyB = groundBody;
+		jointGndSphereDef->bodyB = pistonSphere;
+		jointGndSphereDef->bodyA = groundBody;
 		jointGndSphereDef->collideConnected = false;
-		jointGndSphereDef->localAnchorA.Set(0,0); 
-		jointGndSphereDef->localAnchorB = pistonSphere->GetWorldCenter();
+		jointGndSphereDef->localAnchorB.Set(0,0); 
+		jointGndSphereDef->localAnchorA = pistonSphere->GetWorldCenter();
 		//jointGndSphereDef->collideConnected = false;
 		sphereGndJoint = m_world->CreateJoint(jointGndSphereDef);
 
@@ -557,9 +563,17 @@ b2Joint* sphereGndJoint;
 		m_world->CreateJoint(&prismaticJointDef);
 
 	}
-	
-	
-
+		
+	//Fuel Piston Gear joint
+	b2GearJointDef* fuelPistonJoint = new b2GearJointDef();
+	{
+		fuelPistonJoint->bodyA = fuelPlank;
+		fuelPistonJoint->bodyB = pistonSphere;
+		fuelPistonJoint->joint1 = fuelPlankJoint;
+		fuelPistonJoint->joint2 = sphereGndJoint;
+		fuelPistonJoint->ratio = -0.5f;
+		//m_world->CreateJoint(fuelPistonJoint);
+	}
 }
 sim_t *sim = new sim_t("Dominos", dominos_t::create);
 
@@ -567,18 +581,32 @@ sim_t *sim = new sim_t("Dominos", dominos_t::create);
 void dominos_t::step(settings_t* settings){
 		base_sim_t::step(settings);
 		
-		for(int i = 0; i < 50; i++){
+		for(int i = 0; i < nBalls; i++){
 			b2Vec2 pos = ball_array[i]->GetPosition();
 			b2Vec2 vel = ball_array[i]->GetLinearVelocity();
 			b2Vec2 var1 = (b2Vec2(-30,40));
 			
-			if(cos(angle)*pos.y-sin(angle)*pos.x > var1.y ||cos(angle)*pos.x+sin(angle)*pos.y < var1.x){
+			if(cos(angle)*pos.y-sin(angle)*pos.x-x > var1.y ||cos(angle)*pos.x+sin(angle)*pos.y-y < var1.x){
 		ball_array[i]->SetTransform(transform(b2Vec2((rand() % 2) + 12.0f, (rand() % 2) + 27.0f)), 0);
 		ball_array[i]->SetLinearVelocity(transform(b2Vec2((rand() % 10) - 5.0f , (rand() % 10) - 5.0f)));
 		ball_array[i]->GetFixtureList()->SetDensity( 0.0000007f);
 		}
-		
-		
+	}
+	
+	fuelPlankJoint->SetMotorSpeed(0.5f * pistonSphere->GetAngularVelocity());
+	exhaustPlankJoint->SetMotorSpeed(0.5f * pistonSphere->GetAngularVelocity());
+
+	
+	if (fuelContactBool){
+		fuelControl->SetLinearVelocity(b2Vec2(0.0f, 0.0f));
+		fuelRod1->SetAngularVelocity(0.0f);
+		fuelContactBool = false;
+	}
+	
+	if (exhaustContactBool){
+		exhaustControl->SetLinearVelocity(b2Vec2(0.0f, 0.0f));
+		exhaustRod1->SetAngularVelocity(0.0f);
+		exhaustContactBool = false;
 	}
 }
 

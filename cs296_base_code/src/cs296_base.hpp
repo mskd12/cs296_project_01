@@ -170,6 +170,8 @@ namespace cs296
     b2Profile m_max_profile;
     b2Profile m_total_profile;
   };
+  
+  
 }
 
 #endif

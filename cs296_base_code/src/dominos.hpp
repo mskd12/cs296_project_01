@@ -22,25 +22,62 @@
  * Instructor: Parag Chaudhuri
  */
 
+ # include <iostream>
+#include "cs296_base.hpp"
+using namespace std;
 #ifndef _DOMINOS_HPP_
 #define _DOMINOS_HPP_
-
-namespace cs296
+namespace cs296 
 {
+	bool fuelContactBool = false;
+	bool exhaustContactBool = false;
+	class MyContactListener : public b2ContactListener
+	{
+		public : 
+		void EndContact (b2Contact* contact)
+		{
+			void* bodyUserDataA = contact->GetFixtureA()->GetBody()->GetUserData();
+			void* bodyUserDataB = contact->GetFixtureB()->GetBody()->GetUserData();
+			int* a = (int*)(bodyUserDataA);
+			int* b = (int*)(bodyUserDataB);
+			if (a != NULL && b != NULL) {
+				if (((*a == 1) && (*b == 2)) || ((*a == 2) && (*b == 1))) {
+					fuelContactBool = true;
+				}
+			}
+			if (a != NULL && b != NULL) {
+				if (((*a == 3) && (*b == 2)) || ((*a == 2) && (*b == 3))) {
+					exhaustContactBool = true;
+				}
+			}
+		}
+	};
+			
   //! This is the class that sets up the Box2D simulation world
   //! Notice the public inheritance - why do we inherit the base_sim_t class?
   class dominos_t : public base_sim_t
   {
   public:
-    
+    MyContactListener myListener;
     dominos_t();
     
     static base_sim_t* create()
     {
       return new dominos_t;
     }
+    
     void step(settings_t* settings1);
-    b2Body* ball_array[200];
+    const int static nBalls = 100;
+    b2Body* ball_array[nBalls];
+    b2Body* pistonSphere;
+    b2Body* fuelPlank;
+    b2Body* exhaustPlank;
+    b2RevoluteJoint* fuelPlankJoint;
+    b2RevoluteJoint* exhaustPlankJoint;
+    b2Body* fuelControl;
+    b2Body* fuelRod1;
+    b2Body* exhaustControl;
+    b2Body* exhaustRod1;
   };
 }
   
