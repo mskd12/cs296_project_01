@@ -19,8 +19,8 @@ GLUI_ROOT=/usr
 GL_ROOT=/usr/include/
 
 #Libraries
-#LIBS = -lBox2D -lglui -framework GLUT -framework OpenGL
-LIBS = -lBox2D -lglui -lglut -lGLU -lGL
+LIBS = -lBox2D -lglui -framework GLUT -framework OpenGL
+#LIBS = -lBox2D -lglui -lglut -lGLU -lGL
 
 # Compiler and Linker flags
 CPPFLAGS =-g -O3 -Wall -fno-strict-aliasing
