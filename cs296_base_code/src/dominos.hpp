@@ -29,8 +29,8 @@ using namespace std;
 #define _DOMINOS_HPP_
 namespace cs296 
 {
-	bool fuelContactBool = false;
-	bool exhaustContactBool = false;
+	bool fuelContactBool[5] = {false, false, false, false, false};
+	bool exhaustContactBool[5] = {false, false, false, false, false};
 	class MyContactListener : public b2ContactListener
 	{
 		public : 
@@ -40,14 +40,19 @@ namespace cs296
 			void* bodyUserDataB = contact->GetFixtureB()->GetBody()->GetUserData();
 			int* a = (int*)(bodyUserDataA);
 			int* b = (int*)(bodyUserDataB);
-			if (a != NULL && b != NULL) {
-				if (((*a == 1) && (*b == 2)) || ((*a == 2) && (*b == 1))) {
-					fuelContactBool = true;
+
+			for (int i = 0; i < 5; i++) {
+				if (a != NULL && b != NULL) {
+					if (((*a == 10 + i) && (*b == 60 + i)) || ((*a == 60 + i) && (*b == 10 + i))) {
+						fuelContactBool[i] = true;
+						//cout<<"fuel   "<<i<<endl;
+					}
 				}
-			}
-			if (a != NULL && b != NULL) {
-				if (((*a == 3) && (*b == 2)) || ((*a == 2) && (*b == 3))) {
-					exhaustContactBool = true;
+				if (a != NULL && b != NULL) {
+					if (((*a == 30 + i) && (*b == 20 + i)) || ((*a == 20 + i) && (*b == 30 + i))) {
+						exhaustContactBool[i] = true;
+						//cout<<"exhaust   "<<i<<endl;
+					}
 				}
 			}
 		}
@@ -65,19 +70,35 @@ namespace cs296
     {
       return new dominos_t;
     }
+    const float32 static degtorad = 0.01745329251994f;
+    float x;
+    float y;
+    float angle;
+
+    b2Vec2 transform(b2Vec2 abc)//////////////////  translation is not taken care of
+	  {
+		  b2Vec2 now;
+		  now.x = abc.x*cos(angle)-abc.y*sin(angle)+x;
+		  now.y = abc.x*sin(angle)+abc.y*cos(angle)+y;
+		  return now;
+	  }
     
     void step(settings_t* settings1);
     const int static nBalls = 100;
-    b2Body* ball_array[nBalls];
+    b2Body* fuelIntakeRight;
+    b2Body* fuelIntakeLeft;
+    b2Body* initialCombustibleParticle[5];
+    b2Body* ball_array[nBalls][5];
     b2Body* pistonSphere;
-    b2Body* fuelPlank;
-    b2Body* exhaustPlank;
-    b2RevoluteJoint* fuelPlankJoint;
-    b2RevoluteJoint* exhaustPlankJoint;
-    b2Body* fuelControl;
-    b2Body* fuelRod1;
-    b2Body* exhaustControl;
-    b2Body* exhaustRod1;
+    b2Body* fuelPlank[5];
+    b2Body* exhaustPlank[5];
+    b2RevoluteJoint* fuelPlankJoint[5];
+    b2RevoluteJoint* exhaustPlankJoint[5];
+    b2Body* fuelControl[5];
+    b2Body* fuelRod1[5];
+    b2Body* exhaustControl[5];
+    b2Body* exhaustRod1[5];
+    b2Body* piston[5];
   };
 }
   
