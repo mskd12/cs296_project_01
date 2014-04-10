@@ -1,0 +1,72 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="./index.css">
+		<title> CS296 Group 04 Project: Simulation of a Radial Engine. </title>
+	</head>
+	
+	<body class="body"style="background-image:url('./images/grey_wash_wall.png');font-size:20px;font-family:Verdana;height:100%;width:80%;margin: 0 auto">
+		<h1 style="text-align:center">
+			Box2D Simulation of a Radial Engine
+		</h1>
+	
+		<div style="text-align:right;margin-right:15%">
+			Pratik Fegade (120050004) <br>
+			M. S. Krishna Deepak (120050057) <br>
+			P. Bharath Kumar (120050058)
+		</div>
+
+		<hr>
+
+		<div>
+			<h3> Introduction </h3>
+
+			This project was done as a part of the Software Systems Course (CS296). We had to, at the start of the course propose a simulation of a complex machine for the 
+			project. <a href="http://www.cse.iitb.ac.in/~bharath/cs296-lab01-sub.html" target="_blank">This</a> is the link for our earlier project proposal. This simulation was done using the physics engine <a href="http://box2d.org" target="_blank">Box2D</a>. The entire project was coded up in C++.</p>
+			
+			<br>
+
+			<h3> Links to the Profiling Data Analysis </h3>
+			The simulation was profiled with <a href="https://perf.wiki.kernel.org/index.php/Main_Page" target="_blank">perf</a> and the data was analysed. This profiling was done by disabling the graphics and the GUI part of the simulation to get the data for the actual simulation. 
+				<ul>
+					<li> <a href="http://www.cse.iitb.ac.in/~pratikf/cs296_g04_project_report.pdf" target="_blank"> A PDF copy of the report </a> </li>
+					<li> <a href="http://www.cse.iitb.ac.in/~pratikf/cs296_g04_project_report.html" target="_blank"> The same report in HTML </a> </li>
+
+				</ul>
+			<h3> Some Screenshots of the Simulation</h3>
+			<figure>
+				<figcaption class="captions">The entire engine with 5 cylinders</figcaption>
+				<img class = "screenshots" src="./images/full.png" width = "70%" style="text-align: center"> <br>
+				
+				<br>
+				<figcaption class="captions">A Close Up</figcaption>
+				<img class = "screenshots" src="./images/bothClosed.png" width = "70%" align="middle"> <br>
+				
+				<br>
+				<figcaption class="captions">A close up with a engine in the fuel intake stroke</figcaption>
+				<img class = "screenshots" src="./images/fuelOpen.png" width = "70%" align="middle"> <br>
+				
+				<br>
+				<figcaption class="captions">A close up with a engine in the exhaust stroke</figcaption>
+				<img class = "screenshots" src="./images/exhaustOpen.png" width = "70%" align="middle"> <br>
+				
+			</figure>
+
+			<br>
+			<h3> References </h3>
+			Some of the important references used for the simulation are as follows:
+			<ul>
+				<li><a href="http://www.iforce2d.net/b2dtut/" target="_blank">iforce2d Box2D Tutorials</a></li>
+				<li><a href="http://box2d.org" target="_blank">The Box2D Website and the official manual</a></li>
+				<li><a href="http://programanddesign.com/box2d/annotated.html/" target="_blank">Box2D Documentation</a></li>
+				<li><a href="http://stackoverflow.com" target="_blank">StackOverFlow</a></li>
+				<li><a href="http://gamedev.stackexchange.com">Game Development Stack Exchange</a></li>
+				<li><a href="http://blog.allanbishop.com/box2d-2-1a-tutorial-part-2-joints/" target="_blank">Box2D Tutorial on Joints by Allan Bishop</a></li>
+				<li><a href="http://www.emanueleferonato.com/2009/01/27/box2d-tutorial-for-the-absolute-beginners/" target="_blank">Box2D Tutorials Emanuele Feronato</a></li>
+				<li><a href="https://www.youtube.com/watch?v=8kZRpouZ3OQ" target="_blank">A Similar Simulation</a></li>
+			</ul>
+		</div>
+	</body>
+</html>
+
+				
